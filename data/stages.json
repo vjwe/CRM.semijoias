@@ -1,0 +1,110 @@
+[
+  {
+    "id": "prospect",
+    "label": "Interesse (Catálogo)",
+    "color": "border-slate-300",
+    "bg": "bg-slate-100",
+    "text": "text-slate-800",
+    "order": 1,
+    "funnelType": "conventional"
+  },
+  {
+    "id": "contacted",
+    "label": "Apresentação / Atendimento",
+    "color": "border-sky-300",
+    "bg": "bg-sky-50",
+    "text": "text-sky-800",
+    "order": 2,
+    "funnelType": "conventional"
+  },
+  {
+    "id": "qualified",
+    "label": "Escolha de Mostruário",
+    "color": "border-indigo-300",
+    "bg": "bg-indigo-50",
+    "text": "text-indigo-800",
+    "order": 3,
+    "funnelType": "conventional"
+  },
+  {
+    "id": "proposal",
+    "label": "Orçamento e Condições",
+    "color": "border-amber-300",
+    "bg": "bg-amber-50",
+    "text": "text-amber-800",
+    "order": 4,
+    "funnelType": "conventional"
+  },
+  {
+    "id": "negotiation",
+    "label": "Envio das Semijoias",
+    "color": "border-purple-300",
+    "bg": "bg-purple-50",
+    "text": "text-purple-800",
+    "order": 5,
+    "funnelType": "conventional"
+  },
+  {
+    "id": "won",
+    "label": "Venda Concluída 🎉",
+    "color": "border-emerald-300",
+    "bg": "bg-emerald-50",
+    "text": "text-emerald-800",
+    "order": 6,
+    "funnelType": "conventional"
+  },
+  {
+    "id": "lost",
+    "label": "Sem Interesse (Perda)",
+    "color": "border-rose-300",
+    "bg": "bg-rose-50",
+    "text": "text-rose-800",
+    "order": 7,
+    "funnelType": "conventional"
+  },
+  {
+    "id": "onboarding",
+    "label": "Onboarding (Boas-Vindas)",
+    "color": "border-sky-300",
+    "bg": "bg-sky-50",
+    "text": "text-sky-800",
+    "order": 8,
+    "funnelType": "inverted"
+  },
+  {
+    "id": "activation",
+    "label": "Ativação / Uso",
+    "color": "border-indigo-300",
+    "bg": "bg-indigo-50",
+    "text": "text-indigo-800",
+    "order": 9,
+    "funnelType": "inverted"
+  },
+  {
+    "id": "retention",
+    "label": "Retenção / Sucesso",
+    "color": "border-emerald-300",
+    "bg": "bg-emerald-50",
+    "text": "text-emerald-800",
+    "order": 10,
+    "funnelType": "inverted"
+  },
+  {
+    "id": "expansion",
+    "label": "Expansão (Upsell)",
+    "color": "border-amber-300",
+    "bg": "bg-amber-50",
+    "text": "text-amber-800",
+    "order": 11,
+    "funnelType": "inverted"
+  },
+  {
+    "id": "referral",
+    "label": "Indicação (Advogado)",
+    "color": "border-rose-300",
+    "bg": "bg-rose-50",
+    "text": "text-rose-800",
+    "order": 12,
+    "funnelType": "inverted"
+  }
+]

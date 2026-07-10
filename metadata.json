@@ -1,0 +1,6 @@
+{
+  "name": "CRM WhatsApp & Funil de Vendas",
+  "description": "CRM com funil de vendas, envio rápido de WhatsApp, notificações, relatórios de desempenho gerados por IA, importação/exportação de CSV e integração via API.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "temp-1",
+    "name": "Boas-vindas + Catálogo Semijoias",
+    "category": "introduction",
+    "message": "Olá, {nome}! Tudo bem? Sou da Glow Semijoias. ✨ Vi que você se interessou pelo nosso catálogo de peças folheadas em Ouro 18k e Ródio Branco. Estarei te enviando as fotos e tabela de atacado e consignado. Qual tipo de parceria você busca hoje: revender com maleta ou comprar atacado?"
+  },
+  {
+    "id": "temp-2",
+    "name": "Follow-up de Seleção de Peças",
+    "category": "followup",
+    "message": "Olá, {nome}. Tudo bem? Estou passando para saber se você conseguiu dar uma olhada na nossa nova coleção de semijoias. Se quiser, posso montar uma seleção personalizada de brincos, colares e anéis mais vendidos na sua região para facilitar o seu início!"
+  },
+  {
+    "id": "temp-3",
+    "name": "Mostruário Liberado! (Ganho)",
+    "category": "proposal",
+    "message": "Parabéns, {nome}! 🎉 Seu mostruário de semijoias Glow já foi liberado e está pronto. Estamos finalizando a embalagem e o termo de consignado. Nosso objetivo é te ajudar a lucrar muito! Em breve te envio o rastreamento das peças."
+  },
+  {
+    "id": "temp-4",
+    "name": "Cobrança 1: Lembrete Amigável 🌸",
+    "category": "other",
+    "message": "Olá, {nome}! Tudo bem? Passando para lembrar que o acerto do seu mostruário de semijoias no valor de R$ {valor} venceu recentemente. Caso já tenha realizado o pagamento via Pix, favor desconsiderar. Se precisar de alguma facilidade ou da chave Pix, me avise por aqui!"
+  },
+  {
+    "id": "temp-5",
+    "name": "Cobrança 2: Notificação de Atraso Ativa ⚠️",
+    "category": "other",
+    "message": "Olá, {nome}. Tudo bem? Estamos tentando contato sobre o saldo pendente do seu acerto de semijoias no valor de R$ {valor}. Consta em nosso sistema um atraso de {dias_atraso} dias. Precisamos regularizar essa pendência para liberação do seu próximo mostruário. Como podemos facilitar para você hoje?"
+  },
+  {
+    "id": "temp-6",
+    "name": "Cobrança 3: Proposta de Acordo / Parcelamento 🤝",
+    "category": "other",
+    "message": "Olá, {nome}! Entendemos que imprevistos acontecem. Queremos muito te ajudar a continuar revendendo nossas semijoias e limpando suas pendências de R$ {valor}. Conseguimos parcelar este saldo em até 3x sem juros ou dar um desconto especial para quitação à vista hoje. Vamos fechar esse acordo?"
+  }
+]
