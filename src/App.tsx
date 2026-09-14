@@ -6,9 +6,12 @@ import LeadsListView from "./components/LeadsListView";
 import TemplatesView from "./components/TemplatesView";
 import IntegrationView from "./components/IntegrationView";
 import DelinquentsView from "./components/DelinquentsView";
+import PostSalesView from "./components/PostSalesView";
+import AdsView from "./components/AdsView";
 import LeadDetailsModal from "./components/LeadDetailsModal";
-import { Lead, MessageTemplate, AppNotification, LeadStage, PipelineStage } from "./types";
-import { X, Bell, Check, Users, Plus, ShieldAlert, Sparkles, Loader2, MessageSquare, Laptop, Smartphone, HelpCircle } from "lucide-react";
+import SettingsModal from "./components/SettingsModal";
+import { Lead, MessageTemplate, AppNotification, LeadStage, PipelineStage, CompanyProfile, CustomFieldDefinition, TargetModule } from "./types";
+import { X, Bell, Check, Users, Plus, ShieldAlert, Sparkles, Loader2, MessageSquare, Laptop, Smartphone, HelpCircle, Building2, Megaphone, Kanban, HeartHandshake, AlertTriangle } from "lucide-react";
 import { getWhatsAppUrl, WhatsAppMode, getWhatsAppModeLabel } from "./utils/whatsapp";
 
 export default function App() {
@@ -17,7 +20,33 @@ export default function App() {
   const [templates, setTemplates] = useState<MessageTemplate[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [stages, setStages] = useState<PipelineStage[]>([]);
+  const [whatsappPresetMessage, setWhatsappPresetMessage] = useState<string>("");
+  const [company, setCompany] = useState<CompanyProfile>(() => {
+    try {
+      const cached = localStorage.getItem("crm_company_profile");
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (e) {
+      // ignore
+    }
+    return {
+      name: "CRM Multinegócios",
+      subtitle: "Gestão Comercial & Funil de Vendas",
+      segment: "Varejo & Serviços",
+      currency: "R$",
+      defaultLeadValue: 1000
+    };
+  });
+  const [customFields, setCustomFields] = useState<CustomFieldDefinition[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  // Sync document title with company name
+  useEffect(() => {
+    if (company?.name) {
+      document.title = `${company.name} | CRM & Funil de Vendas`;
+    }
+  }, [company?.name]);
   
   // Free WhatsApp platform sending mode (web, app, auto)
   const [whatsAppMode, setWhatsAppMode] = useState<WhatsAppMode>(() => {
@@ -34,9 +63,11 @@ export default function App() {
   // Modals state
   const [showAddLeadModal, setShowAddLeadModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
 
-  // Form states for manual Lead addition
+  // Form states for manual Lead addition with Funnel Destination Integration
+  const [newLeadTargetModule, setNewLeadTargetModule] = useState<TargetModule>("sales");
   const [newLeadName, setNewLeadName] = useState("");
   const [newLeadNickname, setNewLeadNickname] = useState("");
   const [newLeadEmail, setNewLeadEmail] = useState("");
@@ -44,6 +75,8 @@ export default function App() {
   const [newLeadValue, setNewLeadValue] = useState("");
   const [newLeadStage, setNewLeadStage] = useState<LeadStage>("");
   const [newLeadSource, setNewLeadSource] = useState("Manual");
+  const [newLeadDebtValue, setNewLeadDebtValue] = useState("1200");
+  const [newLeadDelayDays, setNewLeadDelayDays] = useState("15");
   const [isSavingLead, setIsSavingLead] = useState(false);
 
   // Synthetic sound trigger (satisfying micro-feedback)
@@ -102,12 +135,37 @@ export default function App() {
   const loadData = async (silent = false) => {
     if (!silent) setIsLoadingLeads(true);
     try {
-      const [leadsRes, tempsRes, notifsRes, stagesRes] = await Promise.all([
+      const [leadsRes, tempsRes, notifsRes, stagesRes, companyRes, customFieldsRes] = await Promise.all([
         fetch("/api/leads"),
         fetch("/api/templates"),
         fetch("/api/notifications"),
         fetch("/api/stages"),
+        fetch("/api/company"),
+        fetch("/api/custom-fields")
       ]);
+
+      // Load company profile independently
+      if (companyRes.ok) {
+        try {
+          const freshCompany = await companyRes.json();
+          if (freshCompany && freshCompany.name) {
+            setCompany(freshCompany);
+            localStorage.setItem("crm_company_profile", JSON.stringify(freshCompany));
+          }
+        } catch (err) {
+          console.error("Error parsing company data:", err);
+        }
+      }
+
+      // Load custom fields independently
+      if (customFieldsRes.ok) {
+        try {
+          const freshFields = await customFieldsRes.json();
+          setCustomFields(freshFields);
+        } catch (err) {
+          console.error("Error parsing custom fields:", err);
+        }
+      }
 
       if (leadsRes.ok && tempsRes.ok && notifsRes.ok && stagesRes.ok) {
         const freshLeads = await leadsRes.json();
@@ -179,9 +237,15 @@ export default function App() {
           nickname: newLeadNickname,
           email: newLeadEmail,
           phone: newLeadPhone,
-          value: Number(newLeadValue) || 0,
-          stage: newLeadStage,
+          value: Number(newLeadValue) || (newLeadTargetModule === 'delinquents' ? Number(newLeadDebtValue) : 0),
+          stage: newLeadTargetModule === 'post_sales' ? 'won' : newLeadStage,
           source: newLeadSource,
+          targetModule: newLeadTargetModule,
+          isInadimplente: newLeadTargetModule === 'delinquents',
+          valorInadimplente: newLeadTargetModule === 'delinquents' ? (Number(newLeadDebtValue) || 1200) : 0,
+          diasAtraso: newLeadTargetModule === 'delinquents' ? (Number(newLeadDelayDays) || 15) : 0,
+          statusCobranca: newLeadTargetModule === 'delinquents' ? "friendly" : undefined,
+          postSalesStage: newLeadTargetModule === 'post_sales' ? "onboarding" : undefined
         })
       });
 
@@ -194,6 +258,7 @@ export default function App() {
         setNewLeadValue("");
         setNewLeadStage("prospect");
         setNewLeadSource("Manual");
+        setNewLeadTargetModule("sales");
         setShowAddLeadModal(false);
         playAlertSound("success");
         await loadData();
@@ -333,16 +398,67 @@ export default function App() {
           <LeadsListView
             leads={leads}
             stages={stages}
+            customFields={customFields}
             onLeadClick={(lead) => setSelectedLead(lead)}
             onAddLeadClick={() => setShowAddLeadModal(true)}
             onImportComplete={() => loadData()}
             onWhatsAppDirectClick={handleDirectWhatsAppClick}
+            onUpdateLead={(updated) => {
+              setLeads(prev => prev.map(l => l.id === updated.id ? updated : l));
+              if (selectedLead && selectedLead.id === updated.id) {
+                setSelectedLead(updated);
+              }
+            }}
+            onDeleteLead={(id) => {
+              setLeads(prev => prev.filter(l => l.id !== id));
+              if (selectedLead && selectedLead.id === id) {
+                setSelectedLead(null);
+              }
+            }}
           />
         );
       case "templates":
-        return <TemplatesView templates={templates} onTemplatesChange={() => loadData()} />;
+        return (
+          <TemplatesView
+            templates={templates}
+            stages={stages}
+            onTemplatesChange={() => loadData()}
+            onOpenWhatsAppWithTemplate={(msgText) => {
+              navigator.clipboard.writeText(msgText);
+              alert("Texto do modelo copiado para a área de transferência!");
+            }}
+          />
+        );
       case "integration":
-        return <IntegrationView onIntegrationTriggered={() => loadData()} />;
+        return <IntegrationView customFields={customFields} onIntegrationTriggered={() => loadData()} />;
+      case "post_sales":
+        return (
+          <PostSalesView
+            leads={leads}
+            templates={templates}
+            onLeadClick={(lead) => setSelectedLead(lead)}
+            onUpdateLead={async (leadId, data) => {
+              try {
+                const res = await fetch(`/api/leads/${leadId}`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                  const updated = await res.json();
+                  setLeads(prev => prev.map(l => l.id === updated.id ? updated : l));
+                  if (selectedLead && selectedLead.id === updated.id) {
+                    setSelectedLead(updated);
+                  }
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            onWhatsAppDirectClick={handleDirectWhatsAppClick}
+            onRefreshData={loadData}
+          />
+        );
       case "delinquents":
         return (
           <DelinquentsView
@@ -355,6 +471,14 @@ export default function App() {
                 setSelectedLead(updated);
               }
             }}
+            onRefreshData={loadData}
+          />
+        );
+      case "ads":
+        return (
+          <AdsView 
+            leads={leads} 
+            onRefreshLeads={loadData} 
           />
         );
       default:
@@ -374,6 +498,8 @@ export default function App() {
         }}
         unreadNotifications={unreadCount}
         setShowNotifications={setShowNotifications}
+        company={company}
+        onOpenSettings={() => setShowSettingsModal(true)}
       />
 
       {/* Main Panel Content Area */}
@@ -385,14 +511,16 @@ export default function App() {
             <h2 className="text-base font-bold text-slate-800">
               {currentView === "dashboard" && "Painel de Performance Comercial"}
               {currentView === "pipeline" && "Funil de Vendas (CRM)"}
+              {currentView === "post_sales" && "Pós-Vendas & Sucesso da Revendedora"}
+              {currentView === "delinquents" && "Gestão de Inadimplência & Cobrança"}
               {currentView === "leads" && "Lista de Contatos"}
-              {currentView === "delinquents" && "Gestão de Cobrança (Inadimplentes)"}
+              {currentView === "ads" && "Gestão de Anúncios Pagos (ADS)"}
               {currentView === "templates" && "Modelos Rápidos do WhatsApp"}
-              {currentView === "integration" && "Integrações via API"}
+              {currentView === "integration" && "Integrações & Gerador de Formulários"}
             </h2>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {/* WhatsApp Platform Selector (No API Cost Option) */}
             <div className="flex items-center space-x-2 bg-slate-50 border border-slate-100 p-1 rounded-xl text-xs font-semibold">
               <span className="text-slate-400 pl-1.5 flex items-center space-x-1" title="Envio Grátis de Mensagens">
@@ -442,13 +570,23 @@ export default function App() {
             {/* Quick stats banner */}
             <div className="hidden sm:flex items-center space-x-1.5 text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
               <Users className="w-3.5 h-3.5 text-emerald-500" />
-              <span>{leads.length} leads no total</span>
+              <span>{leads.length} leads</span>
             </div>
+
+            {/* Company Settings Header Button */}
+            <button
+              onClick={() => setShowSettingsModal(true)}
+              className="text-xs font-bold text-slate-700 hover:text-emerald-600 p-2 hover:bg-slate-50 rounded-xl transition-all border border-slate-200 flex items-center space-x-1.5 cursor-pointer"
+              title="Configurações da Empresa"
+            >
+              <Building2 className="w-4 h-4 text-emerald-500" />
+              <span className="hidden md:inline">Empresa</span>
+            </button>
 
             {/* Sync trigger button */}
             <button
               onClick={() => loadData()}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 p-1.5 hover:bg-slate-50 rounded-lg transition-colors border border-slate-100"
+              className="text-xs font-bold text-slate-500 hover:text-slate-800 p-1.5 hover:bg-slate-50 rounded-xl transition-colors border border-slate-100 cursor-pointer"
               title="Sincronizar Dados"
             >
               Recarregar
@@ -461,7 +599,7 @@ export default function App() {
           {isLoadingLeads && leads.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
               <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
-              <p className="text-slate-500 text-xs font-mono tracking-wide">Carregando CRM WhatsCRM...</p>
+              <p className="text-slate-500 text-xs font-mono tracking-wide">Carregando WhatsCRM...</p>
             </div>
           ) : (
             renderActiveView()
@@ -469,7 +607,24 @@ export default function App() {
         </div>
       </main>
 
-      {/* 1. Lead Details / Timeline Drawer Modal */}
+      {/* 1. Company & System Settings Modal */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        company={company}
+        customFields={customFields}
+        onCompanyUpdated={(updated) => {
+          setCompany(updated);
+          try {
+            localStorage.setItem("crm_company_profile", JSON.stringify(updated));
+          } catch (e) {
+            console.error("Failed to cache company profile:", e);
+          }
+        }}
+        onCustomFieldsUpdated={(fields) => setCustomFields(fields)}
+      />
+
+      {/* 2. Lead Details / Timeline Drawer Modal */}
       {selectedLead && (
         <LeadDetailsModal
           lead={selectedLead}
@@ -488,32 +643,86 @@ export default function App() {
         />
       )}
 
-      {/* 2. Add New Lead Popup Modal */}
+      {/* 3. Add New Lead Popup Modal */}
       {showAddLeadModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in duration-200">
             <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
-              <h3 className="font-bold text-sm">Criar Novo Lead Manual</h3>
-              <button onClick={() => setShowAddLeadModal(false)} className="text-slate-400 hover:text-white">
+              <div>
+                <h3 className="font-bold text-sm">Criar Novo Contato / Lead</h3>
+                <p className="text-[11px] text-slate-400">Cadastre e envie diretamente para o módulo correto do CRM</p>
+              </div>
+              <button onClick={() => setShowAddLeadModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateLead} className="p-6 space-y-4">
+            <form onSubmit={handleCreateLead} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              
+              {/* Funnel Target Integration Selector */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Nome Completo (Obrigatório)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-2">
+                  Destino do Cadastro no CRM *
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewLeadTargetModule("sales")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center space-y-1 ${
+                      newLeadTargetModule === "sales"
+                        ? "bg-emerald-50 border-emerald-500 text-emerald-800 ring-2 ring-emerald-500/20 font-bold shadow-xs"
+                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <Kanban className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs">Funil Vendas</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Negociação</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewLeadTargetModule("post_sales")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center space-y-1 ${
+                      newLeadTargetModule === "post_sales"
+                        ? "bg-blue-50 border-blue-500 text-blue-800 ring-2 ring-blue-500/20 font-bold shadow-xs"
+                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <HeartHandshake className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs">Pós-Vendas</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Acompanhamento</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewLeadTargetModule("delinquents")}
+                    className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center space-y-1 ${
+                      newLeadTargetModule === "delinquents"
+                        ? "bg-rose-50 border-rose-500 text-rose-800 ring-2 ring-rose-500/20 font-bold shadow-xs"
+                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <AlertTriangle className="w-4 h-4 text-rose-600" />
+                    <span className="text-xs">Inadimplência</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Cobrança</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Nome Completo *</label>
                 <input
                   type="text"
                   required
                   placeholder="Ex: Carlos Eduardo"
                   value={newLeadName}
                   onChange={(e) => setNewLeadName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 font-semibold"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Como deve ser chamado (Apelido)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Como deve ser chamado (Apelido / Revendedora)</label>
                 <input
                   type="text"
                   placeholder="Ex: Mari, Clarinha, Sofi"
@@ -525,7 +734,18 @@ export default function App() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Email</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Telefone WhatsApp *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: 11988887777"
+                    value={newLeadPhone}
+                    onChange={(e) => setNewLeadPhone(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Email</label>
                   <input
                     type="email"
                     placeholder="carlos@alfa.com"
@@ -534,51 +754,96 @@ export default function App() {
                     className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Telefone (Obrigatório)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ex: 11988887777"
-                    value={newLeadPhone}
-                    onChange={(e) => setNewLeadPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Valor do Negócio (R$)</label>
-                  <input
-                    type="number"
-                    placeholder="Ex: 15000"
-                    value={newLeadValue}
-                    onChange={(e) => setNewLeadValue(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500"
-                  />
+              {/* Dynamic Module Specific Fields */}
+              {newLeadTargetModule === "sales" && (
+                <div className="grid grid-cols-2 gap-3 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Valor Previsto (R$)</label>
+                    <input
+                      type="number"
+                      placeholder="Ex: 1500"
+                      value={newLeadValue}
+                      onChange={(e) => setNewLeadValue(e.target.value)}
+                      className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-emerald-500 font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Etapa de Entrada</label>
+                    <select
+                      value={newLeadStage}
+                      onChange={(e) => setNewLeadStage(e.target.value as LeadStage)}
+                      className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 bg-white font-semibold"
+                    >
+                      {stages.map((stg) => (
+                        <option key={stg.id} value={stg.id}>
+                          {stg.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Etapa de Entrada</label>
-                  <select
-                    value={newLeadStage}
-                    onChange={(e) => setNewLeadStage(e.target.value as LeadStage)}
-                    className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 bg-white"
-                  >
-                    {stages.map((stg) => (
-                      <option key={stg.id} value={stg.id}>
-                        {stg.label} ({(stg.funnelType || "conventional") === "conventional" ? "Comercial" : "Pós-Venda"})
-                      </option>
-                    ))}
-                  </select>
+              )}
+
+              {newLeadTargetModule === "post_sales" && (
+                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100 space-y-2">
+                  <div className="flex items-center space-x-2 text-blue-800 text-xs font-bold">
+                    <HeartHandshake className="w-4 h-4 text-blue-600" />
+                    <span>Cadastro para Pós-Venda & Retenção</span>
+                  </div>
+                  <p className="text-[11px] text-blue-700">
+                    O contato será adicionado como cliente ativo na fase inicial de <strong>Onboarding / Boas-Vindas</strong>.
+                  </p>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Valor do Pedido / Mostruário (R$)</label>
+                    <input
+                      type="number"
+                      placeholder="Ex: 2000"
+                      value={newLeadValue}
+                      onChange={(e) => setNewLeadValue(e.target.value)}
+                      className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-blue-500 font-bold"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {newLeadTargetModule === "delinquents" && (
+                <div className="bg-rose-50/60 p-3 rounded-xl border border-rose-200 space-y-3">
+                  <div className="flex items-center space-x-2 text-rose-800 text-xs font-bold">
+                    <AlertTriangle className="w-4 h-4 text-rose-600" />
+                    <span>Cadastro de Inadimplência / Cobrança</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Valor do Débito (R$) *</label>
+                      <input
+                        type="number"
+                        placeholder="Ex: 1200"
+                        value={newLeadDebtValue}
+                        onChange={(e) => setNewLeadDebtValue(e.target.value)}
+                        className="w-full px-3 py-2 text-xs border border-rose-300 rounded-lg bg-white focus:outline-none focus:border-rose-500 font-bold text-rose-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Dias em Atraso *</label>
+                      <input
+                        type="number"
+                        placeholder="Ex: 15"
+                        value={newLeadDelayDays}
+                        onChange={(e) => setNewLeadDelayDays(e.target.value)}
+                        className="w-full px-3 py-2 text-xs border border-rose-300 rounded-lg bg-white focus:outline-none focus:border-rose-500 font-bold text-rose-700"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Canal de Origem</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Canal de Origem</label>
                 <input
                   type="text"
-                  placeholder="Ex: Indicação, Google Ads, Prospecção Ativa"
+                  placeholder="Ex: Indicação, Meta Ads, Google Ads, Balcão"
                   value={newLeadSource}
                   onChange={(e) => setNewLeadSource(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500"
@@ -589,17 +854,17 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setShowAddLeadModal(false)}
-                  className="text-xs font-semibold px-4 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50"
+                  className="text-xs font-semibold px-4 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingLead}
-                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold text-xs px-5 py-2 rounded-xl transition-colors shadow-md shadow-emerald-600/10 flex items-center space-x-1"
+                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold text-xs px-5 py-2 rounded-xl transition-colors shadow-md shadow-emerald-600/10 flex items-center space-x-1 cursor-pointer"
                 >
                   {isSavingLead ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                  <span>Salvar Lead</span>
+                  <span>Salvar no CRM</span>
                 </button>
               </div>
             </form>
@@ -607,7 +872,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. Notifications Drawer / Overlay */}
+      {/* 4. Notifications Drawer / Overlay */}
       {showNotifications && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex justify-end z-50">
           <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-250">
@@ -684,3 +949,4 @@ export default function App() {
     </div>
   );
 }
+

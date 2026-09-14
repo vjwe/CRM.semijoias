@@ -85,9 +85,9 @@ export default function LeadDetailsModal({ lead, onClose, onUpdateLead, onDelete
           value: Number(value) || 0,
           stage,
           isInadimplente,
-          valorInadimplente: Number(valorInadimplente) || 0,
-          diasAtraso: Number(diasAtraso) || 0,
-          statusCobranca
+          valorInadimplente: isInadimplente ? (Number(valorInadimplente) || 0) : 0,
+          diasAtraso: isInadimplente ? (Number(diasAtraso) || 0) : 0,
+          statusCobranca: isInadimplente ? statusCobranca : undefined
         })
       });
       if (response.ok) {

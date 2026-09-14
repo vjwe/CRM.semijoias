@@ -1,1 +1,59 @@
-[]
+[
+  {
+    "id": "lead-pkzduu1d5",
+    "name": "JOSE",
+    "nickname": "",
+    "email": "",
+    "phone": "3795556677",
+    "value": 1500,
+    "stage": "won",
+    "source": "Manual",
+    "targetModule": "post_sales",
+    "isInadimplente": false,
+    "valorInadimplente": 0,
+    "diasAtraso": 0,
+    "promessaPagamentoData": "",
+    "promessaPagamentoValor": 0,
+    "postSalesStage": "onboarding",
+    "postSalesHealth": "healthy",
+    "postSalesNotes": "",
+    "customFields": {},
+    "createdAt": "2026-08-21T20:28:11.722Z",
+    "updatedAt": "2026-08-21T20:28:11.722Z",
+    "notes": [
+      {
+        "id": "note-p1krqr1ev",
+        "type": "created",
+        "content": "Lead registrado no sistema com destino ao módulo [Pós-Vendas] (Manual)",
+        "timestamp": "2026-08-21T20:28:11.722Z"
+      }
+    ]
+  },
+  {
+    "id": "lead-0k0dkue3f",
+    "name": "MARIA",
+    "nickname": "",
+    "email": "",
+    "phone": "3799992211",
+    "value": 1500,
+    "stage": "prospect",
+    "source": "Manual",
+    "targetModule": "sales",
+    "isInadimplente": false,
+    "valorInadimplente": 0,
+    "diasAtraso": 0,
+    "promessaPagamentoData": "",
+    "promessaPagamentoValor": 0,
+    "customFields": {},
+    "createdAt": "2026-08-21T20:27:50.964Z",
+    "updatedAt": "2026-08-21T20:27:50.964Z",
+    "notes": [
+      {
+        "id": "note-zscqigzc6",
+        "type": "created",
+        "content": "Lead registrado no sistema com destino ao módulo [Funil de Vendas] (Manual)",
+        "timestamp": "2026-08-21T20:27:50.964Z"
+      }
+    ]
+  }
+]

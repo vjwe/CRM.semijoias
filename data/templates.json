@@ -1,38 +1,65 @@
 [
   {
     "id": "temp-1",
-    "name": "Boas-vindas + Catálogo Semijoias",
+    "name": "Apresentação de Catálogo e Parceria",
     "category": "introduction",
+    "funnelModule": "sales",
     "message": "Olá, {nome}! Tudo bem? Sou da Glow Semijoias. ✨ Vi que você se interessou pelo nosso catálogo de peças folheadas em Ouro 18k e Ródio Branco. Estarei te enviando as fotos e tabela de atacado e consignado. Qual tipo de parceria você busca hoje: revender com maleta ou comprar atacado?"
   },
   {
     "id": "temp-2",
-    "name": "Follow-up de Seleção de Peças",
+    "name": "Follow-up de Escolha de Mostruário",
     "category": "followup",
-    "message": "Olá, {nome}. Tudo bem? Estou passando para saber se você conseguiu dar uma olhada na nossa nova coleção de semijoias. Se quiser, posso montar uma seleção personalizada de brincos, colares e anéis mais vendidos na sua região para facilitar o seu início!"
+    "funnelModule": "sales",
+    "message": "Olá, {apelido}. Tudo bem? Estou passando para saber se você conseguiu dar uma olhada na nossa nova coleção de semijoias. Se quiser, posso montar uma seleção personalizada de brincos, colares e anéis mais vendidos na sua região para facilitar o seu início!"
   },
   {
     "id": "temp-3",
-    "name": "Mostruário Liberado! (Ganho)",
+    "name": "Envio de Proposta e Condições",
     "category": "proposal",
-    "message": "Parabéns, {nome}! 🎉 Seu mostruário de semijoias Glow já foi liberado e está pronto. Estamos finalizando a embalagem e o termo de consignado. Nosso objetivo é te ajudar a lucrar muito! Em breve te envio o rastreamento das peças."
+    "funnelModule": "sales",
+    "message": "Olá, {apelido}! Acabei de preparar a sua proposta personalizada no valor de R$ {valor} com condições especiais! 📋✨ Conseguimos manter essa condição para pedidos confirmados até hoje. Vamos fechar?"
   },
   {
     "id": "temp-4",
-    "name": "Cobrança 1: Lembrete Amigável 🌸",
-    "category": "other",
-    "message": "Olá, {nome}! Tudo bem? Passando para lembrar que o acerto do seu mostruário de semijoias no valor de R$ {valor} venceu recentemente. Caso já tenha realizado o pagamento via Pix, favor desconsiderar. Se precisar de alguma facilidade ou da chave Pix, me avise por aqui!"
+    "name": "Boas-Vindas e Entrega de Kit (Onboarding)",
+    "category": "introduction",
+    "funnelModule": "post_sales",
+    "message": "Parabéns, {apelido}! 🎉 Seja muito bem-vinda(o) à nossa equipe Glow Semijoias! Seu mostruário inicial foi preparado com todo carinho. Surgiu alguma dúvida sobre a tabela de preços ou instruções de cuidados com as peças? Estamos 100% à disposição para te apoiar no que precisar!"
   },
   {
     "id": "temp-5",
-    "name": "Cobrança 2: Notificação de Atraso Ativa ⚠️",
-    "category": "other",
-    "message": "Olá, {nome}. Tudo bem? Estamos tentando contato sobre o saldo pendente do seu acerto de semijoias no valor de R$ {valor}. Consta em nosso sistema um atraso de {dias_atraso} dias. Precisamos regularizar essa pendência para liberação do seu próximo mostruário. Como podemos facilitar para você hoje?"
+    "name": "Pesquisa de Satisfação & Atendimento (CSAT)",
+    "category": "followup",
+    "funnelModule": "post_sales",
+    "message": "Oi, {apelido}! Tudo bem? Gostaríamos muito de saber como está sendo sua experiência com a nossa linha de produtos. De 0 a 10, qual nota você daria para a qualidade das peças e a rapidez do nosso suporte? Seu feedback nos ajuda a melhorar sempre! 💖"
   },
   {
     "id": "temp-6",
-    "name": "Cobrança 3: Proposta de Acordo / Parcelamento 🤝",
+    "name": "Aumento de Limite & Nova Coleção (Upsell)",
+    "category": "proposal",
+    "funnelModule": "post_sales",
+    "message": "Oi, {apelido}! 💎 Temos uma ótima notícia: pelo seu excelente histórico de vendas, liberamos um aumento de limite para o seu mostruário com as novidades da coleção de lançamentos. Gostaria que eu separasse as peças para você?"
+  },
+  {
+    "id": "temp-7",
+    "name": "Lembrete Amigável de Acerto 🌸",
     "category": "other",
-    "message": "Olá, {nome}! Entendemos que imprevistos acontecem. Queremos muito te ajudar a continuar revendendo nossas semijoias e limpando suas pendências de R$ {valor}. Conseguimos parcelar este saldo em até 3x sem juros ou dar um desconto especial para quitação à vista hoje. Vamos fechar esse acordo?"
+    "funnelModule": "delinquents",
+    "message": "Olá, {apelido}! Tudo bem? Passando com carinho para lembrar que o acerto do seu mostruário no valor de R$ {valor} venceu recentemente. Caso já tenha realizado o pagamento via Pix, favor desconsiderar. Se precisar da chave Pix ou de algum suporte, me avise por aqui!"
+  },
+  {
+    "id": "temp-8",
+    "name": "Notificação de Atraso e Regularização ⚠️",
+    "category": "other",
+    "funnelModule": "delinquents",
+    "message": "Olá, {apelido}. Tudo bem? Estamos tentando contato referente ao saldo em aberto de R$ {valor} ({dias_atraso} dias de vencimento). Precisamos alinhar essa pendência para mantermos seu cadastro ativo e liberarmos novos mostruários. Como podemos te ajudar a regularizar hoje?"
+  },
+  {
+    "id": "temp-9",
+    "name": "Proposta de Acordo e Desconto para Quitação 🤝",
+    "category": "other",
+    "funnelModule": "delinquents",
+    "message": "Olá, {apelido}! Entendemos que imprevistos acontecem. Queremos muito te apoiar a quitar suas pendências de R$ {valor}. Conseguimos parcelar este saldo no cartão/Pix ou conceder uma condição com desconto especial para pagamento à vista hoje. Vamos fechar esse acordo?"
   }
 ]

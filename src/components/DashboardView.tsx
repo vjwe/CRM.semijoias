@@ -8,6 +8,7 @@ import {
   TrendingDown, ShieldAlert, BarChart3, HelpCircle
 } from "lucide-react";
 import { Lead, SalesReport, PipelineStage } from "../types";
+import VisualFunnel from "./VisualFunnel";
 
 interface DashboardViewProps {
   leads: Lead[];
@@ -165,6 +166,12 @@ export default function DashboardView({ leads, stages }: DashboardViewProps) {
           </div>
         </div>
 
+      </div>
+
+      {/* Reduced Funnel Diagrams Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <VisualFunnel leads={leads} stages={stages} funnelType="conventional" compact={true} />
+        <VisualFunnel leads={leads} stages={stages} funnelType="inverted" compact={true} />
       </div>
 
       {/* Analytics Charts Grid */}
